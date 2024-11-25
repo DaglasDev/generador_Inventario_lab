@@ -2,14 +2,28 @@ import { Link } from 'react-router';
 import './App.css'
 import { useLabStore } from './store/store';
 import { useState } from 'react';
+import { utils, writeFileXLSX } from "xlsx";
+import { useRef } from 'react';
 
 function App() {
+  const tbl = useRef(null)
   const [nombreLab, setNombreLab] = useState("")
   const { labs, createLab, deleteLab, deleteAllLabs } = useLabStore((state) => state)
   const sendDataCreateLab = (e) => {
     e.preventDefault()
     createLab(nombreLab)
-    console.log("hola")
+  }
+  const generarExcel = () => {
+    const fecha = new Date();
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0'); // Los meses comienzan en 0
+    const anio = fecha.getFullYear();
+    const horas = String(fecha.getHours()).padStart(2, '0');
+    const minutos = String(fecha.getMinutes()).padStart(2, '0');
+    // generate workbook from table element
+    const wb = utils.table_to_book(tbl.current);
+    // write to XLSX
+    writeFileXLSX(wb, `Excel_Generado_${dia}-${mes}-${anio}-${horas}-${minutos}.xlsx`);
   }
   return (
     <div className="container">
@@ -36,10 +50,16 @@ function App() {
           </div>
         </div>
       </div>
+      <div className="container my-2 border border-success text-center">
+        <div className="row">
+          <div className="col">
+            <button type='button' className="btn btn-success btn-lg my-2" onClick={generarExcel} > Generar Excel </button>
+          </div>
+        </div>
+      </div>
 
 
       {/* MODALES */}
-
 
       {/* create lab */}
       <div className="modal" tabIndex="-1" id="createLabModal" aria-labelledby="createLabModalLabel" aria-hidden="true">
@@ -109,6 +129,46 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* tabla invisible para la generacion de XLSX */}
+
+      <table className=" table-excel" ref={tbl}>
+        <thead>
+          <tr>
+            <th>Laboratorio</th>
+            <th>Materiales</th>
+            <th>Cantidad</th>
+            <th>Unidades</th>
+            <th>Observaciones</th>
+            <th>Tipo</th>
+          </tr>
+        </thead>
+        {
+          labs && labs.map((lab) => (
+            <>
+              <tbody>
+                {lab.materiales.sort((a, b) => {
+                  const esInsumoA = a.esInsumo ? 1 : 0;
+                  const esInsumoB = b.esInsumo ? 1 : 0;
+                  return esInsumoA - esInsumoB;
+                }).map(({ nombre, esInsumo, cantidad, unidad, observacion }, index) => (
+                  <tr key={`${lab.id}-${index}`}>
+                    {index === 0 && (
+                      <th rowSpan={lab.materiales.length}>{lab.nombre}</th>
+                    )}
+                    <td>{nombre}</td>
+                    <td>{cantidad}</td>
+                    <td>{unidad}</td>
+                    <td>{observacion}</td>
+                    <td>{esInsumo ? "insumo" : "activo"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </>
+          ))
+        }
+      </table>
+
     </div>
   );
 }

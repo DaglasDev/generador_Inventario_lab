@@ -4,7 +4,7 @@ export default function Nav() {
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
       <div className="container-fluid">
-        <Link className="navbar-brand" to="/generador_Inventario_lab">
+        <Link className="navbar-brand" to="/generador_Inventario_lab/">
           Página principal
         </Link>
         <button
