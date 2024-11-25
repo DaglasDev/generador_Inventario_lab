@@ -132,7 +132,7 @@ function App() {
 
       {/* tabla invisible para la generacion de XLSX */}
 
-      <table className=" table-excel" ref={tbl}>
+      <table className="d-none table-excel" ref={tbl}>
         <thead>
           <tr>
             <th>Laboratorio</th>
